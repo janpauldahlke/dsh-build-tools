@@ -1,6 +1,6 @@
 {
   "name": "dsh-build-tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared dual-face build tooling for DeepSeek Harness plugins: host ESM + client __ModuleLoader__ CJS, one typed helper, byte-identical artifacts.",
   "type": "module",
   "license": "MIT",
