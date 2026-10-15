@@ -1,6 +1,6 @@
 {
   "name": "dsh-build-tools",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Shared dual-face build tooling for DeepSeek Harness plugins: host ESM + client __ModuleLoader__ CJS, one typed helper, byte-identical artifacts.",
   "type": "module",
   "license": "MIT",
@@ -43,14 +43,9 @@
       "types": "./types/test.d.ts",
       "default": "./test/harness.mjs"
     },
-    "./prepare": {
-      "types": "./types/prepare.d.ts",
-      "default": "./src/prepare.js"
-    },
     "./package.json": "./package.json"
   },
   "bin": {
-    "dsh-prepare-soft": "./bin/prepare-soft.js",
     "dsh-verify-plugin": "./bin/verify-plugin.js"
   },
   "files": [

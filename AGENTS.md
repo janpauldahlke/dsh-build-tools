@@ -38,8 +38,9 @@ The minimum working setup, in order:
 3. Set `package.json` fields — `main`, `exports`, `files`, and **both** `dsh.bundle`
    and `dsh.client`. Exact shape and the reasons each field matters:
    "Making the artifact actually load".
-4. Add `"prepare": "node build.mjs"` (fails loudly; see "The `prepare` script"
-   before adding any fallback).
+4. Add `"prepare": "node build.mjs"`. It fails loudly on a broken build — that
+   is the policy, and there is no opt-out; see "The `prepare` script" for why
+   the fallback variant was removed.
 5. Build, then install the bundle into the profile and verify it actually
    activated — do not stop at "the build succeeded".
 
@@ -249,24 +250,28 @@ do not bounce the primary session to see whether something works.
 
 ## The `prepare` script
 
-Default policy here is **fail loudly**:
+Policy is **fail loudly**:
 
 ```json
 "prepare": "node build.mjs"
 ```
 
-If you deliberately track prebuilt `lib/` — real when a plugin carries a heavy
-runtime dependency and someone git-installs it on a machine without the
-toolchain — opt in explicitly:
+There is no soft fallback, and deliberately so. An earlier version of this
+package shipped `dsh-prepare-soft`, invoked as
+`"prepare": "node build.mjs || dsh-prepare-soft"`. It could not work: when
+`node build.mjs` fails because `dsh-build-tools` is unresolvable — which is
+exactly what happens when the toolchain is missing — the fallback binary is
+provided by that same unresolvable package. The install then died with
+`dsh-prepare-soft: not found` (exit 127), a less useful failure than a clean
+strict error. It was removed rather than repaired.
 
-```json
-"prepare": "node build.mjs || dsh-prepare-soft"
-```
+A build failure fails the install. That is the point: a plugin that loads
+stale `lib/` and reports healthy is worse than an install that stops.
 
-`dsh-prepare-soft` verifies the prebuilt artifacts actually exist, warns on
-stderr, and exits 1 when there is nothing to fall back to. It never succeeds
-silently. The programmatic form is `prepareBuild()` from
-`dsh-build-tools/prepare`, same behavior, `{ soft: true }` opt-in.
+npm does **not** run `prepare` for packages installed from the registry; the
+published tarball already contains `lib/`. Published plugins therefore install
+fine without the toolchain. `prepare` runs on git installs and clones, which do
+require it.
 
 ---
 

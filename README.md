@@ -71,19 +71,17 @@ The previous pattern across these plugins was:
 "prepare": "node build.mjs || node -e \"console.warn('... relying on prebuilt lib/')\""
 ```
 
-That swallows build failures and silently ships whatever stale `lib/` is committed — an esbuild version mismatch or a type error becomes a plugin that loads yesterday's code and reports healthy. The default policy here is the opposite: **fail loudly**. Either drop the fallback:
+That swallows build failures and silently ships whatever stale `lib/` is committed — an esbuild version mismatch or a type error becomes a plugin that loads yesterday's code and reports healthy. The policy here is the opposite: **fail loudly**. Use the plain form:
 
 ```json
 "prepare": "node build.mjs"
 ```
 
-or, if you genuinely track prebuilt `lib/` for git installs on machines without the toolchain, opt in explicitly — it still verifies the artifacts exist and warns on stderr, never silently:
+**There is no soft fallback.** This package once shipped one (`dsh-prepare-soft`), and it was removed because it could never work: `node build.mjs` fails in a toolchain-less install precisely because `dsh-build-tools` cannot be resolved, and the fallback binary was provided by that same unresolvable package. The install then failed with `command not found` (exit 127) instead of a clear build error — a worse failure than strict prepare, not a softer one.
 
-```json
-"prepare": "node build.mjs || dsh-prepare-soft"
-```
+If a build fails, the install fails. That is the intended behavior: a plugin that quietly loads yesterday's `lib/` and reports healthy is worse than an install that stops.
 
-There is also a programmatic form (`import { prepareBuild } from 'dsh-build-tools/prepare'`) with the same loud-by-default, `{ soft: true }` opt-in behavior.
+Note that npm does not run `prepare` for packages installed **from the registry** — the published tarball already contains the built `lib/`. So published plugins install fine on machines without the toolchain. `prepare` runs on git installs and on clones; those require the toolchain.
 
 ## Testing
 
@@ -149,7 +147,7 @@ single hardcoded build.
 
 | Package | Repo | What it exercises |
 | --- | --- | --- |
-| [`dsh-gpu-monitor-nvml`](https://www.npmjs.com/package/dsh-gpu-monitor-nvml) | [source](https://github.com/janpauldahlke/dsh-gpu-monitor-nvml) | A native runtime dependency (`node-nvml`) kept external via `host.externals`. The canonical soft-`prepare` case. |
+| [`dsh-gpu-monitor-nvml`](https://www.npmjs.com/package/dsh-gpu-monitor-nvml) | [source](https://github.com/janpauldahlke/dsh-gpu-monitor-nvml) | A native runtime dependency (`node-nvml`) kept external via `host.externals`. |
 | [`dsh-slot-health`](https://www.npmjs.com/package/dsh-slot-health) | [source](https://github.com/janpauldahlke/dsh-local-endpoint-health) | The largest `modules` list — six standalone testables spanning both host and client source trees, so logic can be unit-tested without cordis. |
 | [`dsh-local-long-horizon`](https://www.npmjs.com/package/dsh-local-long-horizon) | [source](https://github.com/janpauldahlke/dsh-local-long-horizon) | Testables consumed by a custom runner (`scripts/run-tests.mjs`) rather than plain `node --test`. |
 | [`dsh-agent-processes`](https://www.npmjs.com/package/dsh-agent-processes) | [source](https://github.com/janpauldahlke/dsh-agent-processes) | Shared logic bundled once and imported by both faces. Carries an ambient `src/types.d.ts` shim so `tsc --noEmit` can resolve `@deepseek-ai/*`. |

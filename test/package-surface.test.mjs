@@ -16,7 +16,6 @@ test('exports cover the documented subpaths', () => {
   assert.deepEqual(Object.keys(pkg.exports).sort(), [
     '.',
     './package.json',
-    './prepare',
     './test',
   ])
 })
@@ -50,6 +49,47 @@ test('bin entries exist on disk', async () => {
 test('files includes everything the package needs to ship', () => {
   for (const needed of ['README.md', 'AGENTS.md', 'src/', 'bin/', 'types/']) {
     assert.ok(pkg.files.includes(needed), `files is missing ${needed}`)
+  }
+})
+
+/**
+ * A target that exists on disk but is not covered by `files` publishes a
+ * broken export. `package.json` and `README.md` are always shipped by npm
+ * regardless of the allowlist.
+ * @param {string} target path relative to package root, with or without `./`
+ */
+function isShipped(target) {
+  const rel = target.replace(/^\.\//, '')
+  if (rel === 'package.json' || rel === 'README.md') return true
+  const allowlist = /** @type {string[]} */ (pkg.files)
+  return allowlist.some((entry) =>
+    entry.endsWith('/') ? rel.startsWith(entry) : rel === entry,
+  )
+}
+
+test('every exported target is covered by the files allowlist', () => {
+  for (const [subpath, entry] of Object.entries(pkg.exports)) {
+    const target = typeof entry === 'string' ? entry : entry.default
+    if (!target) continue
+    assert.ok(
+      isShipped(target),
+      `exports["${subpath}"] -> ${target} is not in files[]; it would 404 for consumers`,
+    )
+    if (typeof entry === 'object' && entry.types) {
+      assert.ok(
+        isShipped(entry.types),
+        `exports["${subpath}"].types -> ${entry.types} is not in files[]`,
+      )
+    }
+  }
+})
+
+test('every bin target is covered by the files allowlist', () => {
+  for (const [name, target] of Object.entries(pkg.bin)) {
+    assert.ok(
+      isShipped(target),
+      `bin ${name} -> ${target} is not in files[]; the command would not install`,
+    )
   }
 })
 
