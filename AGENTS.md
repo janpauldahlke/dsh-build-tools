@@ -8,11 +8,44 @@ reading.
 
 Two audiences, both served here:
 
-- **You are building a plugin with this package** → read "The dual-face
-  contract" and "Making the artifact actually load". Those cover the parts that
-  silently break.
-- **You are changing this package** → also read "Hard contracts" and
-  "Verification gates".
+- **You are in a plugin repo, helping your human build or fix a dsh plugin.**
+  Start at "Using this package in a plugin" — it is the concrete path. Then read
+  "Making the artifact actually load": those are the failure modes that produce
+  correct-looking artifacts and a plugin that still does not appear. Skim "Why
+  this package exists" when you need the reasoning behind a constraint.
+- **You are changing this package itself.** Read "Why this package exists" first,
+  then "Hard contracts" and "Verification gates before any publish".
+
+---
+
+## Using this package in a plugin
+
+The minimum working setup, in order:
+
+1. `npm install --save-dev dsh-build-tools esbuild`
+2. Write `build.mjs`:
+
+   ```js
+   import { buildDshPlugin } from 'dsh-build-tools'
+
+   await buildDshPlugin()
+   ```
+
+   Add `modules: [{ entry, out }]` for any pure-logic code you want to unit test
+   without cordis. Add `host: { externals: [...] }` if the host half uses a
+   native or runtime dependency that must not be inlined.
+
+3. Set `package.json` fields — `main`, `exports`, `files`, and **both** `dsh.bundle`
+   and `dsh.client`. Exact shape and the reasons each field matters:
+   "Making the artifact actually load".
+4. Add `"prepare": "node build.mjs"` (fails loudly; see "The `prepare` script"
+   before adding any fallback).
+5. Build, then install the bundle into the profile and verify it actually
+   activated — do not stop at "the build succeeded".
+
+`npx dsh-verify-plugin <plugin-root> <config.mjs>` is available when migrating a
+plugin that already has committed `lib/` artifacts; it proves the migration
+changed no bytes. New plugins do not need it.
 
 ---
 
