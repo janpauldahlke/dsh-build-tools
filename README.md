@@ -139,6 +139,31 @@ npx dsh-verify-plugin /path/to/plugin /path/to/config.mjs
 
 `AGENTS.md` is self-contained background for agents and people who arrive here from npm or a clone — the dual-face contract, why this package exists, and the failure modes that were learned the hard way.
 
+## The dsh plugin zoo
+
+This package exists because these plugins each carried a hand-written copy of
+the same build script. They are the consumers of the contract encoded here —
+and the evidence for what the contract has to support. Each one exercises a
+different escape hatch, which is why those escape hatches exist rather than a
+single hardcoded build.
+
+| Package | Repo | What it exercises |
+| --- | --- | --- |
+| [`dsh-gpu-monitor-nvml`](https://www.npmjs.com/package/dsh-gpu-monitor-nvml) | [source](https://github.com/janpauldahlke/dsh-gpu-monitor-nvml) | A native runtime dependency (`node-nvml`) kept external via `host.externals`. The canonical soft-`prepare` case. |
+| [`dsh-slot-health`](https://www.npmjs.com/package/dsh-slot-health) | [source](https://github.com/janpauldahlke/dsh-local-endpoint-health) | The largest `modules` list — six standalone testables spanning both host and client source trees, so logic can be unit-tested without cordis. |
+| [`dsh-local-long-horizon`](https://www.npmjs.com/package/dsh-local-long-horizon) | [source](https://github.com/janpauldahlke/dsh-local-long-horizon) | Testables consumed by a custom runner (`scripts/run-tests.mjs`) rather than plain `node --test`. |
+| [`dsh-agent-processes`](https://www.npmjs.com/package/dsh-agent-processes) | [source](https://github.com/janpauldahlke/dsh-agent-processes) | Shared logic bundled once and imported by both faces. Carries an ambient `src/types.d.ts` shim so `tsc --noEmit` can resolve `@deepseek-ai/*`. |
+| [`dsh-local-memento`](https://www.npmjs.com/package/dsh-local-memento) | [source](https://github.com/janpauldahlke/dsh-memento) | `loader: { '.md': 'text' }` — Markdown inlined as a string at build time, on both the client and a standalone module. |
+
+
+---
+
+If you maintain a plugin that uses this package and hits a case the options do
+not cover, that is the signal to open an issue here rather than fork the build
+script back into your repo. A new escape hatch benefits every plugin above; a
+one-off patch in a single plugin is exactly the drift this package was created
+to end.
+
 ## License
 
 MIT
