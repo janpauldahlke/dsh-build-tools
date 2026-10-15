@@ -1,0 +1,76 @@
+{
+  "name": "dsh-build-tools",
+  "version": "0.1.0",
+  "description": "Shared dual-face build tooling for DeepSeek Harness plugins: host ESM + client __ModuleLoader__ CJS, one typed helper, byte-identical artifacts.",
+  "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "Jan (HagbardCeline)",
+    "email": "jandareal@gmail.com"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek-harness-plugin",
+    "dsh",
+    "build-tools",
+    "esbuild",
+    "module-loader",
+    "dual-face",
+    "packaging",
+    "devtools"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janpauldahlke/dsh-build-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/janpauldahlke/dsh-build-tools/issues"
+  },
+  "homepage": "https://github.com/janpauldahlke/dsh-build-tools#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./test": {
+      "types": "./types/test.d.ts",
+      "default": "./test/harness.mjs"
+    },
+    "./prepare": {
+      "types": "./types/prepare.d.ts",
+      "default": "./src/prepare.js"
+    }
+  },
+  "bin": {
+    "dsh-prepare-soft": "./bin/prepare-soft.js",
+    "dsh-verify-plugin": "./bin/verify-plugin.js"
+  },
+  "files": [
+    "README.md",
+    "AGENTS.md",
+    "src/",
+    "test/harness.mjs",
+    "bin/",
+    "types/"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "prepublishOnly": "npm run typecheck && npm test"
+  },
+  "peerDependencies": {
+    "esbuild": ">=0.21 <0.27"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.6.0"
+  }
+}

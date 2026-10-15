@@ -1,0 +1,42 @@
+# Deps / install
+node_modules/
+
+# Build output (source is the package; publish via "files")
+dist/
+lib/
+*.tsbuildinfo
+
+# Pack / publish artifacts
+*.tgz
+.npm/
+
+# Logs / coverage
+*.log
+npm-debug.log*
+coverage/
+.nyc_output/
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+*.key
+ENV.md
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local harness / agent leftovers
+.dsh/
+**/.dsh-session
+agent/
+plan/
+.tmp*/
+
+
+# Local migration staging (per-plugin verify configs) — not tracked, not shipped.
+# NOTE: pattern was previously `operator/** */` (stray ` */` made it match nothing).
+operator/
